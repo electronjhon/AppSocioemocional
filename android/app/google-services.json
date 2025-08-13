@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "827566218596",
+    "project_id": "socioemocional-app",
+    "storage_bucket": "socioemocional-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:827566218596:android:e5ac0be9538f1db4576e71",
+        "android_client_info": {
+          "package_name": "com.example.socioemocional_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkmBuHqSxa8MNAV47ziS8beCnYNLRCE4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
