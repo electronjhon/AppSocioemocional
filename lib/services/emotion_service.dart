@@ -39,7 +39,7 @@ class EmotionService {
   // Sincronizar emoción a Firebase
   Future<void> _syncToFirebase(EmotionRecord emotion) async {
     try {
-      await _db
+      final docRef = await _db
           .collection('students')
           .doc(emotion.studentUid)
           .collection('emotions')
@@ -50,9 +50,11 @@ class EmotionService {
         'dayKey': emotion.dayKey,
       });
       
-      // Marcar como sincronizado
+      // Marcar como sincronizado con el ID de Firebase
       if (emotion.id != null) {
         await _localDb.markAsSynced(emotion.id!);
+        // Actualizar el ID local con el ID de Firebase
+        await _localDb.updateEmotionId(emotion.id!, docRef.id);
       }
     } catch (e) {
       print('Error syncing to Firebase: $e');
@@ -125,6 +127,30 @@ class EmotionService {
     }
   }
 
+  // Eliminar emoción (local y Firebase si está sincronizada)
+  Future<void> deleteEmotion(EmotionRecord emotion) async {
+    if (emotion.id != null) {
+      // Eliminar de la base de datos local
+      await _localDb.deleteEmotion(emotion.id!);
+      
+      // Si está sincronizada, eliminar también de Firebase
+      if (emotion.isSynced && await _connectivity.checkConnectivity()) {
+        try {
+          await _db
+              .collection('students')
+              .doc(emotion.studentUid)
+              .collection('emotions')
+              .doc(emotion.id)
+              .delete();
+        } catch (e) {
+          print('Error deleting from Firebase: $e');
+          // Si falla la eliminación en Firebase, no es crítico
+          // ya que el registro local ya se eliminó
+        }
+      }
+    }
+  }
+
   // Obtener estadísticas locales del estudiante
   Future<Map<String, int>> getStudentEmotionStats(String studentUid) async {
     return await _localDb.getEmotionStats(studentUid);
@@ -140,7 +166,7 @@ class EmotionService {
     return await _localDb.getEmotionsByStudent(studentUid);
   }
 
-  // Eliminar emoción local
+  // Eliminar emoción local (método legacy - usar deleteEmotion en su lugar)
   Future<void> deleteLocalEmotion(String emotionId) async {
     await _localDb.deleteEmotion(emotionId);
   }

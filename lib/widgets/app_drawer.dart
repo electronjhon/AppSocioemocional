@@ -116,12 +116,11 @@ class _AppDrawerState extends State<AppDrawer> {
         return;
       }
 
-      String? fileId;
-      if (format == 'csv') {
-        fileId = await _driveService.exportEmotionsToDrive(emotions, widget.user);
-      } else {
-        fileId = await _driveService.exportJsonToDrive(emotions, widget.user);
-      }
+             if (format == 'csv') {
+         await _driveService.exportEmotionsToDrive(emotions, widget.user);
+       } else {
+         await _driveService.exportJsonToDrive(emotions, widget.user);
+       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

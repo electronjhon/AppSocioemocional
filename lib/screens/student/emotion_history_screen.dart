@@ -308,15 +308,26 @@ class _EmotionHistoryScreenState extends State<EmotionHistoryScreen> {
       ),
     );
 
-    if (confirmed == true && emotion.id != null) {
-      await widget.emotionService.deleteLocalEmotion(emotion.id!);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Emoción eliminada'),
-            backgroundColor: Colors.red,
-          ),
-        );
+    if (confirmed == true) {
+      try {
+        await widget.emotionService.deleteEmotion(emotion);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Emoción eliminada correctamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al eliminar: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }

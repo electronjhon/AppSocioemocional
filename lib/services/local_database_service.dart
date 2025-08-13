@@ -13,7 +13,9 @@ class LocalDatabaseService {
   }
 
   Future<Database> _initDatabase() async {
-    final path = join(await getDatabasesPath(), 'emotions_database.db');
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'emotions.db');
+
     return await openDatabase(
       path,
       version: 1,
@@ -23,7 +25,7 @@ class LocalDatabaseService {
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE $_tableName(
+      CREATE TABLE $_tableName (
         id TEXT PRIMARY KEY,
         studentUid TEXT NOT NULL,
         emotion TEXT NOT NULL,
@@ -82,6 +84,16 @@ class LocalDatabaseService {
       {'isSynced': 1},
       where: 'id = ?',
       whereArgs: [emotionId],
+    );
+  }
+
+  Future<void> updateEmotionId(String oldId, String newId) async {
+    final db = await database;
+    await db.update(
+      _tableName,
+      {'id': newId},
+      where: 'id = ?',
+      whereArgs: [oldId],
     );
   }
 
