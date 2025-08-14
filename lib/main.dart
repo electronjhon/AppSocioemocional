@@ -14,6 +14,9 @@ Future<void> main() async {
   // Inicializar servicio de conectividad
   await ConnectivityService().initialize();
   
+  // Crear usuario administrador si no existe
+  await AuthService().createAdminUser();
+  
   runApp(const AppSocioemocional());
 }
 
@@ -33,10 +36,11 @@ class AppSocioemocional extends StatelessWidget {
             seedColor: const Color(0xFF00BCD4),
             brightness: Brightness.light,
           ),
-          textTheme: GoogleFonts.poppinsTextTheme(),
           useMaterial3: true,
+          textTheme: GoogleFonts.poppinsTextTheme(),
         ),
         home: const SplashScreen(),
+        debugShowCheckedModeBanner: false,
       ),
     );
   }

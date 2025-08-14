@@ -48,11 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _error = e.toString();
       });
     } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -114,7 +110,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         },
                         child: const Text('Crear cuenta'),
-                      )
+                      ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),

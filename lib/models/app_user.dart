@@ -2,7 +2,7 @@ class AppUser {
   final String uid;
   final String documentId; // documento
   final String email;
-  final String role; // 'estudiante' | 'docente'
+  final String role; // 'estudiante' | 'docente' | 'administrador'
   final String course; // curso
   final String avatarAsset; // ruta local del asset
   final String firstName;
@@ -44,6 +44,33 @@ class AppUser {
       firstName: (map['firstName'] as String?) ?? '',
       lastName: (map['lastName'] as String?) ?? '',
     );
+  }
+
+  AppUser copyWith({
+    String? uid,
+    String? documentId,
+    String? email,
+    String? role,
+    String? course,
+    String? avatarAsset,
+    String? firstName,
+    String? lastName,
+  }) {
+    return AppUser(
+      uid: uid ?? this.uid,
+      documentId: documentId ?? this.documentId,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      course: course ?? this.course,
+      avatarAsset: avatarAsset ?? this.avatarAsset,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'AppUser(uid: $uid, documentId: $documentId, email: $email, role: $role, course: $course, firstName: $firstName, lastName: $lastName)';
   }
 }
 

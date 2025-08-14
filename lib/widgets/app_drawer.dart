@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../services/auth_service.dart';
 import '../services/emotion_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/google_drive_service.dart';
 import '../screens/student/emotion_history_screen.dart';
+import '../screens/splash_screen.dart';
+import '../screens/login_screen.dart';
+import '../providers/session_provider.dart';
 
 class AppDrawer extends StatefulWidget {
   final AppUser user;
@@ -49,12 +53,14 @@ class _AppDrawerState extends State<AppDrawer> {
 
   Future<void> _syncNow() async {
     if (!_isConnected) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sin conexión a internet'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sin conexión a internet'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
       return;
     }
 
@@ -82,23 +88,27 @@ class _AppDrawerState extends State<AppDrawer> {
     }
   }
 
-  Future<void> _exportToGoogleDrive(String format) async {
+    Future<void> _exportToGoogleDrive(String format) async {
     if (!_isSignedInToGoogle) {
       try {
         final success = await _driveService.signIn();
         if (!success) {
           throw Exception('No se pudo conectar con Google Drive');
         }
-        setState(() {
-          _isSignedInToGoogle = true;
-        });
+        if (mounted) {
+          setState(() {
+            _isSignedInToGoogle = true;
+          });
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al conectar: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al conectar: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
         return;
       }
     }
@@ -107,20 +117,22 @@ class _AppDrawerState extends State<AppDrawer> {
       final emotions = await widget.emotionService.getLocalStudentEmotions(widget.user.uid);
       
       if (emotions.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No hay datos para exportar'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No hay datos para exportar'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
         return;
       }
 
-             if (format == 'csv') {
-         await _driveService.exportEmotionsToDrive(emotions, widget.user);
-       } else {
-         await _driveService.exportJsonToDrive(emotions, widget.user);
-       }
+      if (format == 'csv') {
+        await _driveService.exportEmotionsToDrive(emotions, widget.user);
+      } else {
+        await _driveService.exportJsonToDrive(emotions, widget.user);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -163,7 +175,56 @@ class _AppDrawerState extends State<AppDrawer> {
     );
 
     if (confirmed == true) {
-      await AuthService().signOut();
+      try {
+        // Mostrar indicador de carga
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        // Preparar el SessionProvider para el cierre de sesión
+        final sessionProvider = context.read<SessionProvider>();
+        sessionProvider.prepareForSignOut();
+
+        // Cerrar sesión de Firebase
+        await AuthService().signOut();
+        
+        // Cerrar el diálogo de carga
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+
+        // Navegar directamente a la pantalla de login
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          );
+        }
+
+        // Restaurar el SessionProvider después de un breve delay
+        Future.delayed(const Duration(milliseconds: 500), () {
+          sessionProvider.restoreAfterSignOut();
+        });
+        
+      } catch (e) {
+        // Cerrar el diálogo de carga si hay error
+        if (mounted) {
+          Navigator.of(context).pop();
+          
+          // Mostrar mensaje de error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al cerrar sesión: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 

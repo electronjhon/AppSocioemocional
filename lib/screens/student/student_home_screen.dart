@@ -18,10 +18,42 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   final _emotions = const ['Feliz', 'Triste', 'Enojado', 'Ansioso', 'Calmado'];
   String? _selected;
   final EmotionService _emotionService = EmotionService();
+  int _todayEmotionCount = 0;
+  bool _canRecordMore = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTodayEmotionCount();
+  }
+
+  Future<void> _loadTodayEmotionCount() async {
+    final session = context.read<SessionProvider>();
+    if (session.profile != null) {
+      final count = await _emotionService.getTodayEmotionCount(session.profile!.uid);
+      final canRecord = await _emotionService.canRecordEmotion(session.profile!.uid);
+      if (mounted) {
+        setState(() {
+          _todayEmotionCount = count;
+          _canRecordMore = canRecord;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionProvider>();
+    
+    // Si no hay sesión o perfil, mostrar loading
+    if (!session.isLoggedIn || session.profile == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     final user = session.profile!;
     
     return Scaffold(
@@ -39,12 +71,32 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '¿Cómo te sientes hoy?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
+                                    children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                '¿Cómo te sientes hoy?',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: _canRecordMore ? Colors.green : Colors.orange,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  '$_todayEmotionCount/3',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
               // Botones de emociones en una sola fila
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -77,26 +129,58 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              if (!_canRecordMore)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                  ),
+                  child: const Text(
+                    'Has alcanzado el límite de 3 emociones por día. Podrás registrar nuevas emociones mañana.',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              if (!_canRecordMore) const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _selected == null
+                  onPressed: (_selected == null || !_canRecordMore)
                       ? null
                       : () async {
-                          await _emotionService.recordEmotion(
-                            studentUid: user.uid,
-                            emotion: _selected!,
-                          );
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Emoción "${_selected!}" registrada'),
-                                backgroundColor: Colors.green,
-                              ),
+                          try {
+                            await _emotionService.recordEmotion(
+                              studentUid: user.uid,
+                              emotion: _selected!,
                             );
-                            setState(() {
-                              _selected = null;
-                            });
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Emoción "${_selected!}" registrada'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              setState(() {
+                                _selected = null;
+                              });
+                              // Actualizar el contador
+                              await _loadTodayEmotionCount();
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(e.toString()),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           }
                         },
                   style: ElevatedButton.styleFrom(
@@ -107,9 +191,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Registrar Emoción',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: Text(
+                    _canRecordMore ? 'Registrar Emoción' : 'Límite alcanzado (3/día)',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

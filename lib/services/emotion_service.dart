@@ -10,11 +10,16 @@ class EmotionService {
   final ConnectivityService _connectivity = ConnectivityService();
 
   // Registrar emoción localmente y sincronizar si hay conexión
-  Future<void> recordEmotion({
+  Future<bool> recordEmotion({
     required String studentUid,
     required String emotion,
     String? note,
   }) async {
+    // Verificar si se puede registrar una nueva emoción
+    if (!await canRecordEmotion(studentUid)) {
+      throw Exception('Ya has registrado el máximo de 3 emociones para hoy');
+    }
+
     final now = DateTime.now().toUtc();
     final dayKey = DateFormat('yyyy-MM-dd').format(now);
     
@@ -34,6 +39,8 @@ class EmotionService {
     if (await _connectivity.checkConnectivity()) {
       await _syncToFirebase(emotionRecord);
     }
+
+    return true;
   }
 
   // Sincronizar emoción a Firebase
@@ -130,10 +137,7 @@ class EmotionService {
   // Eliminar emoción (local y Firebase si está sincronizada)
   Future<void> deleteEmotion(EmotionRecord emotion) async {
     if (emotion.id != null) {
-      // Eliminar de la base de datos local
-      await _localDb.deleteEmotion(emotion.id!);
-      
-      // Si está sincronizada, eliminar también de Firebase
+      // Si está sincronizada, eliminar primero de Firebase
       if (emotion.isSynced && await _connectivity.checkConnectivity()) {
         try {
           await _db
@@ -144,9 +148,59 @@ class EmotionService {
               .delete();
         } catch (e) {
           print('Error deleting from Firebase: $e');
-          // Si falla la eliminación en Firebase, no es crítico
-          // ya que el registro local ya se eliminó
+          // Continuar con la eliminación local aunque falle Firebase
         }
+      }
+      
+      // Intentar eliminar de la base de datos local usando múltiples estrategias
+      bool deleted = false;
+      
+      // Estrategia 1: Intentar eliminar por ID directo
+      try {
+        final rowsAffected = await _localDb.deleteEmotion(emotion.id!);
+        if (rowsAffected > 0) {
+          deleted = true;
+          print('Successfully deleted by ID: ${emotion.id}');
+        }
+      } catch (e) {
+        print('Failed to delete by ID: $e');
+      }
+      
+      // Estrategia 2: Si no se pudo eliminar por ID, usar criterios múltiples
+      if (!deleted) {
+        try {
+          final rowsAffected = await _localDb.deleteEmotionByMultipleCriteria(
+            studentUid: emotion.studentUid,
+            emotion: emotion.emotion,
+            createdAt: emotion.createdAt,
+            dayKey: emotion.dayKey,
+          );
+          if (rowsAffected > 0) {
+            deleted = true;
+            print('Successfully deleted by multiple criteria');
+          }
+        } catch (e) {
+          print('Failed to delete by multiple criteria: $e');
+        }
+      }
+      
+      // Estrategia 3: Último recurso - eliminar por timestamp
+      if (!deleted) {
+        try {
+          final rowsAffected = await _localDb.deleteEmotionByTimestamp(emotion.studentUid, emotion.createdAt);
+          if (rowsAffected > 0) {
+            deleted = true;
+            print('Successfully deleted by timestamp');
+          } else {
+            print('No rows affected when deleting by timestamp');
+          }
+        } catch (e) {
+          print('Failed to delete by timestamp: $e');
+        }
+      }
+      
+      if (!deleted) {
+        throw Exception('No se pudo eliminar el registro de emoción');
       }
     }
   }
@@ -194,6 +248,21 @@ class EmotionService {
   // Obtener emociones no sincronizadas
   Future<List<EmotionRecord>> getUnsyncedEmotions() async {
     return await _localDb.getUnsyncedEmotions();
+  }
+
+  // Verificar si se puede registrar una nueva emoción (máximo 3 por día)
+  Future<bool> canRecordEmotion(String studentUid) async {
+    final now = DateTime.now().toUtc();
+    final dayKey = DateFormat('yyyy-MM-dd').format(now);
+    final count = await _localDb.getEmotionCountForDay(studentUid, dayKey);
+    return count < 3;
+  }
+
+  // Obtener el conteo de emociones para el día actual
+  Future<int> getTodayEmotionCount(String studentUid) async {
+    final now = DateTime.now().toUtc();
+    final dayKey = DateFormat('yyyy-MM-dd').format(now);
+    return await _localDb.getEmotionCountForDay(studentUid, dayKey);
   }
 }
 

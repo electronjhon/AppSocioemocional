@@ -178,22 +178,13 @@ class _EmotionHistoryScreenState extends State<EmotionHistoryScreen> {
                                 ),
                             ],
                           ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (!emotion.isSynced)
-                                const Icon(
+                          trailing: !emotion.isSynced
+                              ? const Icon(
                                   Icons.cloud_off,
                                   color: Colors.orange,
                                   size: 16,
-                                ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteEmotion(emotion),
-                              ),
-                            ],
-                          ),
+                                )
+                              : null,
                         ),
                       );
                     },
@@ -288,49 +279,7 @@ class _EmotionHistoryScreenState extends State<EmotionHistoryScreen> {
     );
   }
 
-  Future<void> _deleteEmotion(EmotionRecord emotion) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Eliminar emoción'),
-        content: Text('¿Estás seguro de que quieres eliminar el registro de "${emotion.emotion}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
-    );
 
-    if (confirmed == true) {
-      try {
-        await widget.emotionService.deleteEmotion(emotion);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Emoción eliminada correctamente'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error al eliminar: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    }
-  }
 
   Color _colorForEmotion(String emotion) {
     switch (emotion.toLowerCase()) {

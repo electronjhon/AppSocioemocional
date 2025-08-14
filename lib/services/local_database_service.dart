@@ -97,12 +97,40 @@ class LocalDatabaseService {
     );
   }
 
-  Future<void> deleteEmotion(String emotionId) async {
+  Future<int> deleteEmotion(String emotionId) async {
     final db = await database;
-    await db.delete(
+    return await db.delete(
       _tableName,
       where: 'id = ?',
       whereArgs: [emotionId],
+    );
+  }
+
+  Future<int> deleteEmotionByTimestamp(String studentUid, DateTime createdAt) async {
+    final db = await database;
+    return await db.delete(
+      _tableName,
+      where: 'studentUid = ? AND createdAt = ?',
+      whereArgs: [studentUid, createdAt.millisecondsSinceEpoch],
+    );
+  }
+
+  Future<int> deleteEmotionByMultipleCriteria({
+    required String studentUid,
+    required String emotion,
+    required DateTime createdAt,
+    required String dayKey,
+  }) async {
+    final db = await database;
+    return await db.delete(
+      _tableName,
+      where: 'studentUid = ? AND emotion = ? AND createdAt = ? AND dayKey = ?',
+      whereArgs: [
+        studentUid,
+        emotion,
+        createdAt.millisecondsSinceEpoch,
+        dayKey,
+      ],
     );
   }
 
@@ -132,6 +160,15 @@ class LocalDatabaseService {
       stats[row['emotion'] as String] = row['count'] as int;
     }
     return stats;
+  }
+
+  Future<int> getEmotionCountForDay(String studentUid, String dayKey) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM $_tableName WHERE studentUid = ? AND dayKey = ?',
+      [studentUid, dayKey],
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
   Future<void> close() async {

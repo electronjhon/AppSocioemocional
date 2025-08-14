@@ -14,6 +14,16 @@ class TeacherHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionProvider>();
+    
+    // Si no hay sesión o perfil, mostrar loading
+    if (!session.isLoggedIn || session.profile == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     final user = session.profile!;
     final emotionService = EmotionService();
 
