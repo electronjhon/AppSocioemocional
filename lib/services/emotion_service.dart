@@ -114,22 +114,30 @@ class EmotionService {
           );
         }).toList();
 
-        // Combinar datos locales y de Firebase
-        final allEmotions = [...localEmotions, ...firebaseEmotions];
-        // Eliminar duplicados basándose en createdAt
-        final uniqueEmotions = <EmotionRecord>[];
-        final seenDates = <DateTime>{};
+        // Combinar datos locales y de Firebase eliminando duplicados
+        final allEmotions = <EmotionRecord>[];
+        final seenIds = <String>{};
+        final seenTimestamps = <DateTime>{};
         
-        for (final emotion in allEmotions) {
-          if (!seenDates.contains(emotion.createdAt)) {
-            uniqueEmotions.add(emotion);
-            seenDates.add(emotion.createdAt);
+        // Agregar emociones locales no sincronizadas
+        for (final emotion in localEmotions) {
+          if (!emotion.isSynced) {
+            allEmotions.add(emotion);
+            seenTimestamps.add(emotion.createdAt);
+          }
+        }
+        
+        // Agregar emociones de Firebase, evitando duplicados
+        for (final emotion in firebaseEmotions) {
+          if (!seenTimestamps.contains(emotion.createdAt)) {
+            allEmotions.add(emotion);
+            seenTimestamps.add(emotion.createdAt);
           }
         }
         
         // Ordenar por fecha descendente
-        uniqueEmotions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        yield uniqueEmotions;
+        allEmotions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        yield allEmotions;
       }
     }
   }

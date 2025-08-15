@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../providers/session_provider.dart';
+import '../widgets/school_logo.dart';
 
 import 'login_screen.dart';
 import 'student/student_home_screen.dart';
@@ -119,11 +120,7 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.psychology,
-                size: 100,
-                color: Colors.white,
-              ),
+              const SchoolLogo(size: 120.0),
               const SizedBox(height: 24),
               const Text(
                 'App Socioemocional',
@@ -134,6 +131,16 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              const Text(
+                'Institución Educativa Departamental\nPbro. Carlos Garavito A.',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
               const Text(
                 'Gestionando emociones, construyendo bienestar',
                 style: TextStyle(

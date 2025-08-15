@@ -9,6 +9,7 @@ import '../screens/student/emotion_history_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
 import '../providers/session_provider.dart';
+import 'school_logo.dart';
 
 class AppDrawer extends StatefulWidget {
   final AppUser user;
@@ -245,17 +246,23 @@ class _AppDrawerState extends State<AppDrawer> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  child: Text(
-                    '${widget.user.firstName[0]}${widget.user.lastName[0]}',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF00BCD4),
+                Row(
+                  children: [
+                    const SchoolLogo(size: 50.0),
+                    const SizedBox(width: 12),
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.white,
+                      child: Text(
+                        '${widget.user.firstName[0]}${widget.user.lastName[0]}',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00BCD4),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 Text(

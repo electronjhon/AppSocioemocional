@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/auth_service.dart';
 import '../widgets/gradient_background.dart';
+import '../widgets/school_logo.dart';
 
 const avatarAssets = [
   'assets/avatars/avatar1.svg',
@@ -23,10 +24,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _documentController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _courseController = TextEditingController();
   String _role = 'estudiante';
   String _selectedAvatar = avatarAssets.first;
   bool _loading = false;
+  bool _obscurePassword = true;
   String? _error;
 
   @override
@@ -36,6 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _documentController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _courseController.dispose();
     super.dispose();
   }
@@ -70,15 +74,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registro')),
+      appBar: AppBar(
+        title: const Text('Registro'),
+        centerTitle: true,
+      ),
       body: GradientBackground(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
+                const SizedBox(height: 20),
+                const SchoolLogo(size: 80.0),
+                const SizedBox(height: 16),
+                const Text(
+                  'Institución Educativa Departamental\nPbro. Carlos Garavito A.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
                 TextFormField(
                   controller: _firstNameController,
                   decoration: const InputDecoration(labelText: 'Nombre'),
@@ -93,21 +113,100 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _documentController,
-                  decoration: const InputDecoration(labelText: 'Documento'),
-                  validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Documento',
+                    hintText: 'Ej: 12345678',
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'El documento es requerido';
+                    }
+                    if (v.length < 8) {
+                      return 'El documento debe tener al menos 8 dígitos';
+                    }
+                    if (!RegExp(r'^\d+$').hasMatch(v)) {
+                      return 'El documento solo debe contener números';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(labelText: 'Correo'),
-                  validator: (v) => (v == null || !v.contains('@')) ? 'Correo inválido' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Correo',
+                    hintText: 'ejemplo@correo.com',
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'El correo es requerido';
+                    }
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
+                      return 'Ingrese un correo válido';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(labelText: 'Contraseña'),
-                  obscureText: true,
-                  validator: (v) => (v == null || v.length < 6) ? 'Mínimo 6 caracteres' : null,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    hintText: 'Mínimo 6 caracteres',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: _obscurePassword,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'La contraseña es requerida';
+                    }
+                    if (v.length < 6) {
+                      return 'La contraseña debe tener al menos 6 caracteres';
+                    }
+                    if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(v)) {
+                      return 'La contraseña debe contener letras y números';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Confirmar Contraseña',
+                    hintText: 'Repita la contraseña',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: _obscurePassword,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'Confirme la contraseña';
+                    }
+                    if (v != _passwordController.text) {
+                      return 'Las contraseñas no coinciden';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(

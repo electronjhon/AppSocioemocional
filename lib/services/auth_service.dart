@@ -195,17 +195,31 @@ class AuthService {
       // Obtener todos los estudiantes
       final studentsSnapshot = await _db.collection('students').get();
       
-      final batch = _db.batch();
+      int totalDeleted = 0;
       
       for (final studentDoc in studentsSnapshot.docs) {
-        // Eliminar todas las emociones del estudiante
-        final emotionsSnapshot = await studentDoc.reference.collection('emotions').get();
-        for (final emotionDoc in emotionsSnapshot.docs) {
-          batch.delete(emotionDoc.reference);
+        try {
+          // Eliminar todas las emociones del estudiante
+          final emotionsSnapshot = await studentDoc.reference.collection('emotions').get();
+          
+          if (emotionsSnapshot.docs.isNotEmpty) {
+            final batch = _db.batch();
+            
+            for (final emotionDoc in emotionsSnapshot.docs) {
+              batch.delete(emotionDoc.reference);
+            }
+            
+            await batch.commit();
+            totalDeleted += emotionsSnapshot.docs.length;
+            print('Eliminadas ${emotionsSnapshot.docs.length} emociones del estudiante ${studentDoc.id}');
+          }
+        } catch (e) {
+          print('Error eliminando emociones del estudiante ${studentDoc.id}: $e');
+          // Continuar con el siguiente estudiante
         }
       }
       
-      await batch.commit();
+      print('Total de emociones eliminadas: $totalDeleted');
       return true;
     } catch (e) {
       print('Error eliminando todas las emociones: $e');

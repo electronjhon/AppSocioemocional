@@ -7,6 +7,7 @@ import '../../services/emotion_service.dart';
 import '../../models/emotion_record.dart';
 import '../../widgets/gradient_background.dart';
 import '../../widgets/app_drawer.dart';
+import '../../widgets/school_logo.dart';
 
 class TeacherHomeScreen extends StatelessWidget {
   const TeacherHomeScreen({super.key});
@@ -29,7 +30,15 @@ class TeacherHomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hola, ${user.firstName}'),
+        title: Row(
+          children: [
+            const SchoolLogo(size: 32.0, showBorder: false),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text('Hola, ${user.firstName}'),
+            ),
+          ],
+        ),
         backgroundColor: const Color(0xFF00BCD4),
         foregroundColor: Colors.white,
       ),

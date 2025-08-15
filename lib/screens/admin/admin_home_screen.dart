@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../../models/app_user.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/gradient_background.dart';
+import '../../widgets/school_logo.dart';
+import '../../screens/login_screen.dart';
+import '../../providers/session_provider.dart';
+import 'package:provider/provider.dart';
 import 'user_management_screen.dart';
 import 'create_user_screen.dart';
 
@@ -240,19 +244,99 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
 
+  Future<void> _signOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cerrar sesión'),
+        content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        // Mostrar indicador de carga
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        // Preparar el SessionProvider para el cierre de sesión
+        final sessionProvider = context.read<SessionProvider>();
+        sessionProvider.prepareForSignOut();
+
+        // Cerrar sesión de Firebase
+        await _authService.signOut();
+        
+        // Cerrar el diálogo de carga
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+
+        // Navegar directamente a la pantalla de login
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          );
+        }
+
+        // Restaurar el SessionProvider después de un breve delay
+        Future.delayed(const Duration(milliseconds: 500), () {
+          sessionProvider.restoreAfterSignOut();
+        });
+        
+      } catch (e) {
+        // Cerrar el diálogo de carga si hay error
+        if (mounted) {
+          Navigator.of(context).pop();
+          
+          // Mostrar mensaje de error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al cerrar sesión: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Panel de Administración'),
+        title: Row(
+          children: [
+            const SchoolLogo(size: 32.0, showBorder: false),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text('Panel de Administración'),
+            ),
+          ],
+        ),
         backgroundColor: const Color(0xFF00BCD4),
         foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await _authService.signOut();
-            },
+            onPressed: _signOut,
           ),
         ],
       ),
