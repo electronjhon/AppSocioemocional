@@ -22,11 +22,18 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   final EmotionService _emotionService = EmotionService();
   int _todayEmotionCount = 0;
   bool _canRecordMore = true;
+  final TextEditingController _noteController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadTodayEmotionCount();
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadTodayEmotionCount() async {
@@ -119,7 +126,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: ElevatedButton.icon(
-                        onPressed: () => setState(() => _selected = e),
+                        onPressed: () {
+                          setState(() {
+                            _selected = e;
+                            _noteController.clear(); // Limpiar nota al cambiar emoción
+                          });
+                        },
                         icon: Icon(
                           _getEmotionIcon(e),
                           color: Colors.white,
@@ -142,6 +154,43 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Campo de texto para la nota (solo visible si hay emoción seleccionada)
+              if (_selected != null) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _colorForEmotion(_selected!).withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '¿Por qué te sientes $_selected?',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: _colorForEmotion(_selected!),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _noteController,
+                        maxLines: 3,
+                        maxLength: 200,
+                        decoration: const InputDecoration(
+                          hintText: 'Escribe aquí el motivo de tu emoción...',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.all(12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               if (!_canRecordMore)
                 Container(
                   width: double.infinity,
@@ -171,6 +220,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                             await _emotionService.recordEmotion(
                               studentUid: user.uid,
                               emotion: _selected!,
+                              note: _noteController.text.trim(),
                             );
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -181,6 +231,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                               );
                               setState(() {
                                 _selected = null;
+                                _noteController.clear();
                               });
                               // Actualizar el contador
                               await _loadTodayEmotionCount();

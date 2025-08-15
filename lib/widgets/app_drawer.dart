@@ -10,7 +10,6 @@ import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
 import '../providers/session_provider.dart';
 import 'school_logo.dart';
-import 'user_avatar.dart';
 
 class AppDrawer extends StatefulWidget {
   final AppUser user;
@@ -214,23 +213,28 @@ class _AppDrawerState extends State<AppDrawer> {
               children: [
                 Row(
                   children: [
-                    const SchoolLogo(size: 40.0),
-                    const SizedBox(width: 8),
-                    UserAvatar(
-                      avatarAsset: widget.user.avatarAsset,
-                      size: 50.0,
-                      showBorder: true,
-                      borderColor: Colors.white,
-                      borderWidth: 2.0,
+                    const SchoolLogo(size: 50.0),
+                    const SizedBox(width: 12),
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.white,
+                      child: Text(
+                        '${widget.user.firstName[0]}${widget.user.lastName[0]}',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00BCD4),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   '${widget.user.firstName} ${widget.user.lastName}',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -238,14 +242,14 @@ class _AppDrawerState extends State<AppDrawer> {
                   widget.user.role == 'estudiante' ? 'Estudiante' : 'Docente',
                   style: const TextStyle(
                     color: Colors.white70,
-                    fontSize: 12,
+                    fontSize: 14,
                   ),
                 ),
                 Text(
                   'Curso: ${widget.user.course}',
                   style: const TextStyle(
                     color: Colors.white70,
-                    fontSize: 10,
+                    fontSize: 12,
                   ),
                 ),
               ],
@@ -259,9 +263,6 @@ class _AppDrawerState extends State<AppDrawer> {
               color: _isConnected ? Colors.green : Colors.red,
             ),
             title: Text(_isConnected ? 'Conectado' : 'Sin conexión'),
-            subtitle: _hasUnsyncedData 
-                ? const Text('Datos pendientes de sincronizar', style: TextStyle(color: Colors.orange))
-                : null,
           ),
           
           const Divider(),
