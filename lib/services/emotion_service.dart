@@ -47,7 +47,7 @@ class EmotionService {
   Future<void> _syncToFirebase(EmotionRecord emotion) async {
     try {
       final docRef = await _db
-          .collection('students')
+          .collection('users')
           .doc(emotion.studentUid)
           .collection('emotions')
           .add({
@@ -88,13 +88,11 @@ class EmotionService {
     final localEmotions = await _localDb.getEmotionsByStudent(studentUid);
     yield localEmotions;
 
-    // Si hay conexión, intentar sincronizar y obtener datos actualizados
+    // Si hay conexión, obtener datos de Firebase sin sincronizar automáticamente
     if (await _connectivity.checkConnectivity()) {
-      await syncUnsyncedEmotions();
-      
       // Obtener datos actualizados de Firebase
       final firebaseStream = _db
-          .collection('students')
+          .collection('users')
           .doc(studentUid)
           .collection('emotions')
           .orderBy('createdAt', descending: true)
@@ -149,7 +147,7 @@ class EmotionService {
       if (emotion.isSynced && await _connectivity.checkConnectivity()) {
         try {
           await _db
-              .collection('students')
+              .collection('users')
               .doc(emotion.studentUid)
               .collection('emotions')
               .doc(emotion.id)

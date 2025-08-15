@@ -161,8 +161,8 @@ class AuthService {
       // Eliminar de Firestore
       await _db.collection('users').doc(uid).delete();
       
-      // Eliminar datos de emociones del estudiante
-      await _db.collection('students').doc(uid).delete();
+      // Eliminar datos de emociones del estudiante (ya no existe esta colección separada)
+      // Las emociones se eliminan directamente de la subcolección del usuario
       
       return true;
     } catch (e) {
@@ -174,7 +174,7 @@ class AuthService {
   Future<bool> deleteUserEmotions(String uid) async {
     try {
       // Eliminar colección de emociones del estudiante
-      final emotionsRef = _db.collection('students').doc(uid).collection('emotions');
+      final emotionsRef = _db.collection('users').doc(uid).collection('emotions');
       final emotions = await emotionsRef.get();
       
       final batch = _db.batch();
@@ -192,15 +192,15 @@ class AuthService {
 
   Future<bool> deleteAllEmotions() async {
     try {
-      // Obtener todos los estudiantes
-      final studentsSnapshot = await _db.collection('students').get();
+      // Obtener todos los usuarios estudiantes
+      final usersSnapshot = await _db.collection('users').where('role', isEqualTo: 'estudiante').get();
       
       int totalDeleted = 0;
       
-      for (final studentDoc in studentsSnapshot.docs) {
+      for (final userDoc in usersSnapshot.docs) {
         try {
           // Eliminar todas las emociones del estudiante
-          final emotionsSnapshot = await studentDoc.reference.collection('emotions').get();
+          final emotionsSnapshot = await userDoc.reference.collection('emotions').get();
           
           if (emotionsSnapshot.docs.isNotEmpty) {
             final batch = _db.batch();
@@ -211,10 +211,10 @@ class AuthService {
             
             await batch.commit();
             totalDeleted += emotionsSnapshot.docs.length;
-            print('Eliminadas ${emotionsSnapshot.docs.length} emociones del estudiante ${studentDoc.id}');
+            print('Eliminadas ${emotionsSnapshot.docs.length} emociones del estudiante ${userDoc.id}');
           }
         } catch (e) {
-          print('Error eliminando emociones del estudiante ${studentDoc.id}: $e');
+          print('Error eliminando emociones del estudiante ${userDoc.id}: $e');
           // Continuar con el siguiente estudiante
         }
       }

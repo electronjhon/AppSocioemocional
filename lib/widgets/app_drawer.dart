@@ -52,42 +52,7 @@ class _AppDrawerState extends State<AppDrawer> {
     }
   }
 
-  Future<void> _syncNow() async {
-    if (!_isConnected) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sin conexión a internet'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-      return;
-    }
 
-    try {
-      await widget.emotionService.syncUnsyncedEmotions();
-      await _checkStatus();
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Datos sincronizados correctamente'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al sincronizar: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 
     Future<void> _exportToGoogleDrive(String format) async {
     if (!_isSignedInToGoogle) {
@@ -248,15 +213,15 @@ class _AppDrawerState extends State<AppDrawer> {
               children: [
                 Row(
                   children: [
-                    const SchoolLogo(size: 50.0),
-                    const SizedBox(width: 12),
+                    const SchoolLogo(size: 40.0),
+                    const SizedBox(width: 8),
                     CircleAvatar(
-                      radius: 30,
+                      radius: 25,
                       backgroundColor: Colors.white,
                       child: Text(
                         '${widget.user.firstName[0]}${widget.user.lastName[0]}',
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF00BCD4),
                         ),
@@ -264,12 +229,12 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Text(
                   '${widget.user.firstName} ${widget.user.lastName}',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -277,14 +242,14 @@ class _AppDrawerState extends State<AppDrawer> {
                   widget.user.role == 'estudiante' ? 'Estudiante' : 'Docente',
                   style: const TextStyle(
                     color: Colors.white70,
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
                 ),
                 Text(
                   'Curso: ${widget.user.course}',
                   style: const TextStyle(
                     color: Colors.white70,
-                    fontSize: 12,
+                    fontSize: 10,
                   ),
                 ),
               ],
@@ -300,13 +265,6 @@ class _AppDrawerState extends State<AppDrawer> {
             title: Text(_isConnected ? 'Conectado' : 'Sin conexión'),
             subtitle: _hasUnsyncedData 
                 ? const Text('Datos pendientes de sincronizar', style: TextStyle(color: Colors.orange))
-                : null,
-            trailing: _hasUnsyncedData && _isConnected
-                ? IconButton(
-                    icon: const Icon(Icons.sync),
-                    onPressed: _syncNow,
-                    tooltip: 'Sincronizar ahora',
-                  )
                 : null,
           ),
           
