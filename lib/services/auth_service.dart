@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/app_user.dart';
+import 'local_database_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final LocalDatabaseService _localDb = LocalDatabaseService();
 
   Stream<User?> authStateChanges() => _auth.authStateChanges();
 
@@ -183,6 +185,14 @@ class AuthService {
       }
       await batch.commit();
       
+      // Limpiar también las emociones locales del usuario
+      try {
+        await _localDb.clearAllEmotions(); // Esto limpia todas las emociones locales
+        print('Emociones locales del usuario $uid eliminadas');
+      } catch (e) {
+        print('Error eliminando emociones locales del usuario $uid: $e');
+      }
+      
       return true;
     } catch (e) {
       print('Error eliminando emociones: $e');
@@ -217,6 +227,14 @@ class AuthService {
           print('Error eliminando emociones del estudiante ${userDoc.id}: $e');
           // Continuar con el siguiente estudiante
         }
+      }
+      
+      // Limpiar también la base de datos local
+      try {
+        await _localDb.clearAllEmotions();
+        print('Base de datos local limpiada');
+      } catch (e) {
+        print('Error limpiando base de datos local: $e');
       }
       
       print('Total de emociones eliminadas: $totalDeleted');

@@ -7,6 +7,7 @@ import '../../models/emotion_record.dart';
 import '../../widgets/gradient_background.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/school_logo.dart';
+import '../../widgets/user_avatar.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -61,7 +62,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const SchoolLogo(size: 32.0, showBorder: false),
+            UserAvatar(
+              avatarAsset: user.avatarAsset,
+              size: 32.0,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text('Hola, ${user.firstName}'),

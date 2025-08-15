@@ -324,7 +324,18 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const SchoolLogo(size: 32.0, showBorder: false),
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.white,
+              child: Text(
+                '${widget.user.firstName[0]}${widget.user.lastName[0]}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF00BCD4),
+                ),
+              ),
+            ),
             const SizedBox(width: 8),
             const Expanded(
               child: Text('Panel de Administración'),

@@ -10,6 +10,7 @@ import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
 import '../providers/session_provider.dart';
 import 'school_logo.dart';
+import 'user_avatar.dart';
 
 class AppDrawer extends StatefulWidget {
   final AppUser user;
@@ -215,17 +216,12 @@ class _AppDrawerState extends State<AppDrawer> {
                   children: [
                     const SchoolLogo(size: 40.0),
                     const SizedBox(width: 8),
-                    CircleAvatar(
-                      radius: 25,
-                      backgroundColor: Colors.white,
-                      child: Text(
-                        '${widget.user.firstName[0]}${widget.user.lastName[0]}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF00BCD4),
-                        ),
-                      ),
+                    UserAvatar(
+                      avatarAsset: widget.user.avatarAsset,
+                      size: 50.0,
+                      showBorder: true,
+                      borderColor: Colors.white,
+                      borderWidth: 2.0,
                     ),
                   ],
                 ),
