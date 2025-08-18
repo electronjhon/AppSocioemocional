@@ -10,6 +10,7 @@ import 'user_management_screen.dart';
 import 'create_user_screen.dart';
 import 'send_notification_screen.dart';
 import 'notification_history_screen.dart';
+import 'whatsapp_config_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   final AppUser user;
@@ -308,21 +309,37 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                             ),
                           ),
                           SizedBox(height: 12),
-                          Expanded(
-                            child: _buildActionCard(
-                              icon: Icons.history,
-                              title: 'Historial de Píldoras',
-                              subtitle: 'Ver notificaciones enviadas',
-                              color: Colors.purple,
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const NotificationHistoryScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
+                                      Expanded(
+              child: _buildActionCard(
+                icon: Icons.history,
+                title: 'Historial de Píldoras',
+                subtitle: 'Ver notificaciones enviadas',
+                color: Colors.purple,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationHistoryScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 12),
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.message,
+                title: 'Configurar WhatsApp',
+                subtitle: 'Gestionar número de contacto',
+                color: Colors.green,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const WhatsAppConfigScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
                         ],
                       ),
                     ),

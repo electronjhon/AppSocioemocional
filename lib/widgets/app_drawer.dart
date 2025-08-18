@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/emotion_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/google_drive_service.dart';
+import '../services/whatsapp_service.dart';
 import '../screens/student/emotion_history_screen.dart';
 import '../screens/notifications_screen.dart';
 import '../screens/splash_screen.dart';
@@ -25,7 +26,6 @@ class AppDrawer extends StatefulWidget {
   @override
   State<AppDrawer> createState() => _AppDrawerState();
 }
-
 class _AppDrawerState extends State<AppDrawer> {
   bool _isConnected = true;
   bool _hasUnsyncedData = false;
@@ -117,6 +117,130 @@ class _AppDrawerState extends State<AppDrawer> {
             backgroundColor: Colors.red,
           ),
         );
+      }
+    }
+  }
+
+  Future<void> _showWhatsAppDialog(BuildContext context) async {
+    final TextEditingController messageController = TextEditingController(
+      text: 'Hola, necesito ayuda con la aplicación AppSocioemocional.',
+    );
+
+    // Obtener información del usuario
+    final userName = '${widget.user.firstName} ${widget.user.lastName}';
+    final userDocument = widget.user.documentId;
+    final userCourse = widget.user.course;
+
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.message,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text('Contactar por WhatsApp'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Escribe tu mensaje:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Se incluirá automáticamente: $userName, Doc: $userDocument, Curso: $userCourse',
+              style: const TextStyle(
+                fontSize: 11,
+                color: Colors.grey,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: messageController,
+              decoration: const InputDecoration(
+                hintText: 'Escribe tu mensaje aquí...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+              maxLength: 500,
+            ),
+            const SizedBox(height: 8),
+            FutureBuilder<String>(
+              future: WhatsAppService.getWhatsAppNumber(),
+              builder: (context, snapshot) {
+                final number = snapshot.data ?? '+573193046233';
+                return Text(
+                  'Se enviará a: ${WhatsAppService.formatPhoneNumber(number)}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop({
+                'message': messageController.text.trim(),
+              });
+            },
+            icon: const Icon(Icons.send),
+            label: const Text('Enviar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result['message'] != null) {
+      final success = await WhatsAppService.sendWhatsAppMessage(
+        message: result['message']!,
+        userName: userName,
+        userDocument: userDocument,
+        userCourse: userCourse,
+      );
+
+      if (context.mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('WhatsApp abierto exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No se pudo abrir WhatsApp. Asegúrate de tener la aplicación instalada.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -298,6 +422,24 @@ class _AppDrawerState extends State<AppDrawer> {
                   builder: (_) => const NotificationsScreen(),
                 ),
               );
+            },
+          ),
+          
+          // WhatsApp
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.message, color: Colors.white, size: 20),
+            ),
+            title: const Text('Contactar por WhatsApp'),
+            subtitle: const Text('Enviar mensaje de ayuda'),
+            onTap: () {
+              Navigator.of(context).pop(); // Cerrar drawer
+              _showWhatsAppDialog(context);
             },
           ),
           

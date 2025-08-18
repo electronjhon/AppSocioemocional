@@ -12,6 +12,7 @@ import '../../widgets/school_logo.dart';
 import '../../widgets/user_avatar.dart';
 import '../../widgets/notification_badge.dart';
 import '../../widgets/notification_toast.dart';
+import '../../widgets/whatsapp_button.dart';
 import '../notifications_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
@@ -131,6 +132,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 ),
               );
             },
+          ),
+          WhatsAppButton(
+            userName: '${user.firstName} ${user.lastName}',
+            userDocument: user.documentId,
+            userCourse: user.course,
           ),
         ],
       ),
