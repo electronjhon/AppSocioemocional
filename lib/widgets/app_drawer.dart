@@ -6,6 +6,7 @@ import '../services/emotion_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/google_drive_service.dart';
 import '../screens/student/emotion_history_screen.dart';
+import '../screens/notifications_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
 import '../providers/session_provider.dart';
@@ -280,6 +281,21 @@ class _AppDrawerState extends State<AppDrawer> {
                     user: widget.user,
                     emotionService: widget.emotionService,
                   ),
+                ),
+              );
+            },
+          ),
+          
+          // Notificaciones
+          ListTile(
+            leading: const Icon(Icons.notifications, color: Colors.orange),
+            title: const Text('Píldoras'),
+            subtitle: const Text('Ver notificaciones'),
+            onTap: () {
+              Navigator.of(context).pop(); // Cerrar drawer
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const NotificationsScreen(),
                 ),
               );
             },

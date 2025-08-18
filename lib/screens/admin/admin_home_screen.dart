@@ -8,6 +8,8 @@ import '../../providers/session_provider.dart';
 import 'package:provider/provider.dart';
 import 'user_management_screen.dart';
 import 'create_user_screen.dart';
+import 'send_notification_screen.dart';
+import 'notification_history_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   final AppUser user;
@@ -287,6 +289,38 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                               subtitle: '',
                               color: Colors.red,
                               onTap: _deleteAllEmotions,
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Expanded(
+                            child: _buildActionCard(
+                              icon: Icons.notifications_active,
+                              title: 'Enviar Píldora',
+                              subtitle: 'Enviar notificación a estudiantes',
+                              color: Colors.orange,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const SendNotificationScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Expanded(
+                            child: _buildActionCard(
+                              icon: Icons.history,
+                              title: 'Historial de Píldoras',
+                              subtitle: 'Ver notificaciones enviadas',
+                              color: Colors.purple,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const NotificationHistoryScreen(),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],

@@ -3,11 +3,16 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../providers/session_provider.dart';
 import '../../services/emotion_service.dart';
+import '../../services/notification_service.dart';
 import '../../models/emotion_record.dart';
+import '../../models/notification_message.dart';
 import '../../widgets/gradient_background.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/school_logo.dart';
 import '../../widgets/user_avatar.dart';
+import '../../widgets/notification_badge.dart';
+import '../../widgets/notification_toast.dart';
+import '../notifications_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -20,20 +25,56 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   final _emotions = const ['Feliz', 'Triste', 'Enojado', 'Ansioso', 'Calmado'];
   String? _selected;
   final EmotionService _emotionService = EmotionService();
+  final NotificationService _notificationService = NotificationService();
   int _todayEmotionCount = 0;
   bool _canRecordMore = true;
   final TextEditingController _noteController = TextEditingController();
+  List<NotificationMessage> _previousNotifications = [];
 
   @override
   void initState() {
     super.initState();
     _loadTodayEmotionCount();
+    _listenToNotifications();
   }
 
   @override
   void dispose() {
     _noteController.dispose();
     super.dispose();
+  }
+
+  void _listenToNotifications() {
+    final session = context.read<SessionProvider>();
+    if (session.profile != null) {
+      _notificationService.watchUserNotifications(session.profile!.uid).listen((notifications) {
+        if (mounted) {
+          // Verificar si hay nuevas notificaciones no leídas
+          final newUnreadNotifications = notifications
+              .where((notification) => 
+                  !notification.isRead && 
+                  !_previousNotifications.any((prev) => prev.id == notification.id))
+              .toList();
+          
+          // Mostrar toast para cada nueva notificación
+          for (final notification in newUnreadNotifications) {
+            NotificationToast.show(
+              context,
+              notification,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(),
+                  ),
+                );
+              },
+            );
+          }
+          
+          _previousNotifications = notifications;
+        }
+      });
+    }
   }
 
   Future<void> _loadTodayEmotionCount() async {
@@ -81,6 +122,17 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         ),
         backgroundColor: const Color(0xFF00BCD4),
         foregroundColor: Colors.white,
+        actions: [
+          NotificationBadge(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const NotificationsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       drawer: AppDrawer(
         user: user,
