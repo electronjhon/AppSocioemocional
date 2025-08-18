@@ -26,8 +26,14 @@ class _SendNotificationScreenState extends State<SendNotificationScreen> {
   List<String> _availableCourses = [];
   String? _selectedSpecificUser;
   List<AppUser> _availableUsers = [];
+  List<AppUser> _filteredUsers = [];
   bool _loading = false;
   bool _isSpecificUser = false;
+  
+  // Filtros para estudiantes
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedFilterCourse = 'Todos';
+  String _selectedFilterDocument = '';
 
   @override
   void initState() {
@@ -41,6 +47,7 @@ class _SendNotificationScreenState extends State<SendNotificationScreen> {
     _titleController.dispose();
     _messageController.dispose();
     _urlController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -66,10 +73,50 @@ class _SendNotificationScreenState extends State<SendNotificationScreen> {
       final users = await _authService.getAllUsers();
       setState(() {
         _availableUsers = users.where((user) => user.role == 'estudiante').toList();
+        _filteredUsers = List.from(_availableUsers);
       });
     } catch (e) {
       print('Error cargando usuarios: $e');
     }
+  }
+
+  void _filterUsers() {
+    setState(() {
+      _filteredUsers = _availableUsers.where((user) {
+        // Filtro por búsqueda de texto (nombre, apellido o documento)
+        bool matchesSearch = _searchController.text.isEmpty ||
+            user.firstName.toLowerCase().contains(_searchController.text.toLowerCase()) ||
+            user.lastName.toLowerCase().contains(_searchController.text.toLowerCase()) ||
+            user.documentId.contains(_searchController.text);
+        
+        // Filtro por curso
+        bool matchesCourse = _selectedFilterCourse == 'Todos' || 
+            user.course == _selectedFilterCourse;
+        
+        // Filtro por documento
+        bool matchesDocument = _selectedFilterDocument.isEmpty ||
+            user.documentId.contains(_selectedFilterDocument);
+        
+        return matchesSearch && matchesCourse && matchesDocument;
+      }).toList();
+    });
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _searchController.clear();
+      _selectedFilterCourse = 'Todos';
+      _selectedFilterDocument = '';
+      _filteredUsers = List.from(_availableUsers);
+    });
+  }
+
+  AppUser? get selectedUser {
+    if (_selectedSpecificUser == null) return null;
+    return _availableUsers.firstWhere(
+      (user) => user.uid == _selectedSpecificUser,
+      orElse: () => _availableUsers.first,
+    );
   }
 
   Future<void> _sendNotification() async {
@@ -337,36 +384,284 @@ class _SendNotificationScreenState extends State<SendNotificationScreen> {
                                 });
                               },
                             ),
-                            const Text('Enviar a usuario específico'),
+                            const Text('Enviar a estudiante específico'),
                           ],
                         ),
                         
                         if (_isSpecificUser) ...[
-                          const SizedBox(height: 8),
-                          DropdownButtonFormField<String>(
-                            value: _selectedSpecificUser,
-                            decoration: const InputDecoration(
-                              labelText: 'Seleccionar usuario',
-                              border: OutlineInputBorder(),
+                          const SizedBox(height: 16),
+                          
+                          // Filtros de búsqueda
+                          Card(
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Filtros de búsqueda',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  
+                                  // Campo de búsqueda
+                                  TextFormField(
+                                    controller: _searchController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Buscar por nombre o documento',
+                                      hintText: 'Escribe para buscar...',
+                                      prefixIcon: Icon(Icons.search),
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    onChanged: (value) => _filterUsers(),
+                                  ),
+                                  
+                                  const SizedBox(height: 12),
+                                  
+                                  // Filtro por curso
+                                  DropdownButtonFormField<String>(
+                                    value: _selectedFilterCourse,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Filtrar por curso',
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    items: [
+                                      const DropdownMenuItem(
+                                        value: 'Todos',
+                                        child: Text('Todos los cursos'),
+                                      ),
+                                      ..._availableCourses.map((course) {
+                                        return DropdownMenuItem(
+                                          value: course,
+                                          child: Text(course),
+                                        );
+                                      }).toList(),
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedFilterCourse = value!;
+                                        _filterUsers();
+                                      });
+                                    },
+                                  ),
+                                  
+                                  const SizedBox(height: 12),
+                                  
+                                                                     // Filtro por documento
+                                   TextFormField(
+                                     decoration: const InputDecoration(
+                                       labelText: 'Filtrar por documento',
+                                       hintText: 'Número de documento',
+                                       prefixIcon: Icon(Icons.badge),
+                                       border: OutlineInputBorder(),
+                                     ),
+                                     onChanged: (value) {
+                                       setState(() {
+                                         _selectedFilterDocument = value;
+                                         _filterUsers();
+                                       });
+                                     },
+                                   ),
+                                   
+                                   const SizedBox(height: 12),
+                                   
+                                   // Botón para limpiar filtros
+                                   SizedBox(
+                                     width: double.infinity,
+                                     child: OutlinedButton.icon(
+                                       onPressed: _clearFilters,
+                                       icon: const Icon(Icons.clear),
+                                       label: const Text('Limpiar filtros'),
+                                       style: OutlinedButton.styleFrom(
+                                         foregroundColor: Colors.grey,
+                                       ),
+                                     ),
+                                   ),
+                                ],
+                              ),
                             ),
-                            items: _availableUsers.map((user) {
-                              return DropdownMenuItem(
-                                value: user.uid,
-                                child: Text('${user.firstName} ${user.lastName} - ${user.course}'),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedSpecificUser = value;
-                              });
-                            },
-                            validator: _isSpecificUser ? (value) {
-                              if (value == null) {
-                                return 'Selecciona un usuario';
-                              }
-                              return null;
-                            } : null,
                           ),
+                          
+                          const SizedBox(height: 12),
+                          
+                          // Lista de estudiantes filtrados
+                          if (_filteredUsers.isNotEmpty) ...[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Estudiantes encontrados:',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF00BCD4),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${_filteredUsers.length}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 200,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ListView.builder(
+                                itemCount: _filteredUsers.length,
+                                itemBuilder: (context, index) {
+                                  final user = _filteredUsers[index];
+                                  final isSelected = _selectedSpecificUser == user.uid;
+                                  
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: isSelected 
+                                          ? const Color(0xFF00BCD4) 
+                                          : Colors.grey.shade300,
+                                      child: Text(
+                                        '${user.firstName[0]}${user.lastName[0]}',
+                                        style: TextStyle(
+                                          color: isSelected ? Colors.white : Colors.grey.shade700,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      '${user.firstName} ${user.lastName}',
+                                      style: TextStyle(
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                    ),
+                                    subtitle: Text('Doc: ${user.documentId} - ${user.course}'),
+                                    trailing: isSelected 
+                                        ? const Icon(Icons.check_circle, color: Color(0xFF00BCD4))
+                                        : null,
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedSpecificUser = user.uid;
+                                      });
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ] else ...[
+                            const Card(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Text(
+                                  'No se encontraron estudiantes con los filtros aplicados',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                          
+                          // Card del estudiante seleccionado
+                          if (selectedUser != null) ...[
+                            const SizedBox(height: 16),
+                            Card(
+                              elevation: 4,
+                              color: const Color(0xFF00BCD4).withOpacity(0.1),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.person,
+                                          color: Color(0xFF00BCD4),
+                                          size: 24,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          'Estudiante Seleccionado',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Color(0xFF00BCD4),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 30,
+                                          backgroundColor: const Color(0xFF00BCD4),
+                                          child: Text(
+                                            '${selectedUser!.firstName[0]}${selectedUser!.lastName[0]}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '${selectedUser!.firstName} ${selectedUser!.lastName}',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Documento: ${selectedUser!.documentId}',
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Curso: ${selectedUser!.course}',
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Email: ${selectedUser!.email}',
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ],
                     ),
@@ -375,11 +670,42 @@ class _SendNotificationScreenState extends State<SendNotificationScreen> {
                 
                 const SizedBox(height: 16),
                 
+                // Mensaje de validación
+                if (_isSpecificUser && _selectedSpecificUser == null) ...[
+                  Card(
+                    color: Colors.orange.withOpacity(0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.warning,
+                            color: Colors.orange,
+                          ),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Debes seleccionar un estudiante para enviar la píldora',
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                
                 // Botón de envío
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _loading ? null : _sendNotification,
+                    onPressed: (_loading || (_isSpecificUser && _selectedSpecificUser == null)) 
+                        ? null 
+                        : _sendNotification,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00BCD4),
                       foregroundColor: Colors.white,
