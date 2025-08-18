@@ -194,8 +194,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ],
       ),
       body: GradientBackground(
-        child: Container(
-          width: double.infinity,
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,119 +231,122 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               const SizedBox(height: 20),
               
               // Acciones administrativas
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Acciones Administrativas',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Acciones Administrativas',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: _buildActionCard(
-                              icon: Icons.person_add,
-                              title: 'Agregar Usuario',
-                              subtitle: '',
-                              color: Colors.green,
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => CreateUserScreen(
-                                      authService: _authService,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          Expanded(
-                            child: _buildActionCard(
-                              icon: Icons.people,
-                              title: 'Gestionar Usuarios',
-                              subtitle: '',
-                              color: Colors.blue,
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => UserManagementScreen(
-                                      authService: _authService,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          Expanded(
-                            child: _buildActionCard(
-                              icon: Icons.delete_sweep,
-                              title: 'Eliminar Total Registros',
-                              subtitle: '',
-                              color: Colors.red,
-                              onTap: _deleteAllEmotions,
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          Expanded(
-                            child: _buildActionCard(
-                              icon: Icons.notifications_active,
-                              title: 'Enviar Píldora',
-                              subtitle: 'Enviar notificación a estudiantes',
-                              color: Colors.orange,
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const SendNotificationScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                                      Expanded(
-              child: _buildActionCard(
-                icon: Icons.history,
-                title: 'Historial de Píldoras',
-                subtitle: 'Ver notificaciones enviadas',
-                color: Colors.purple,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationHistoryScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.message,
-                title: 'Configurar WhatsApp',
-                subtitle: 'Gestionar número de contacto',
-                color: Colors.green,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const WhatsAppConfigScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 12),
+                                     Column(
+                     children: [
+                       SizedBox(
+                         height: 130,
+                         child: _buildActionCard(
+                           icon: Icons.person_add,
+                           title: 'Agregar Usuario',
+                           subtitle: 'Agrega usuario de cualquier perfil',
+                           color: Colors.green,
+                           onTap: () {
+                             Navigator.of(context).push(
+                               MaterialPageRoute(
+                                 builder: (_) => CreateUserScreen(
+                                   authService: _authService,
+                                 ),
+                               ),
+                             );
+                           },
+                         ),
+                       ),
+                       const SizedBox(height: 12),
+                       SizedBox(
+                         height: 130,
+                         child: _buildActionCard(
+                           icon: Icons.people,
+                           title: 'Gestionar Usuarios',
+                           subtitle: 'Filtra y ajusta cualquier usuario',
+                           color: Colors.blue,
+                           onTap: () {
+                             Navigator.of(context).push(
+                               MaterialPageRoute(
+                                 builder: (_) => UserManagementScreen(
+                                   authService: _authService,
+                                 ),
+                               ),
+                             );
+                           },
+                         ),
+                       ),
+                       const SizedBox(height: 12),
+                       SizedBox(
+                         height: 130,
+                         child: _buildActionCard(
+                           icon: Icons.delete_sweep,
+                           title: 'Eliminar Total Registros',
+                           subtitle: 'Limpia la colección Emotions',
+                           color: Colors.red,
+                           onTap: _deleteAllEmotions,
+                         ),
+                       ),
+                       const SizedBox(height: 12),
+                       SizedBox(
+                         height: 130,
+                         child: _buildActionCard(
+                           icon: Icons.notifications_active,
+                           title: 'Enviar Píldora',
+                           subtitle: 'Enviar notificación a estudiantes',
+                           color: Colors.orange,
+                           onTap: () {
+                             Navigator.of(context).push(
+                               MaterialPageRoute(
+                                 builder: (_) => const SendNotificationScreen(),
+                               ),
+                             );
+                           },
+                         ),
+                       ),
+                       const SizedBox(height: 12),
+                       SizedBox(
+                         height: 130,
+                         child: _buildActionCard(
+                           icon: Icons.history,
+                           title: 'Historial de Píldoras',
+                           subtitle: 'Ver notificaciones enviadas',
+                           color: Colors.purple,
+                           onTap: () {
+                             Navigator.of(context).push(
+                               MaterialPageRoute(
+                                 builder: (_) => const NotificationHistoryScreen(),
+                               ),
+                             );
+                           },
+                         ),
+                       ),
+                       const SizedBox(height: 12),
+                       SizedBox(
+                         height: 130,
+                         child: _buildActionCard(
+                           icon: Icons.message,
+                           title: 'Configurar WhatsApp',
+                           subtitle: 'Gestionar número de contacto',
+                           color: Colors.green,
+                           onTap: () {
+                             Navigator.of(context).push(
+                               MaterialPageRoute(
+                                 builder: (_) => const WhatsAppConfigScreen(),
+                               ),
+                             );
+                           },
+                         ),
+                       ),
+                                             const SizedBox(height: 80), // Espacio adicional al final
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -365,19 +367,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+                 child: Container(
+           width: double.infinity,
+           padding: const EdgeInsets.all(12.0),
+           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 48,
-                color: color,
-              ),
-              const SizedBox(height: 12),
-              Text(
+                             Icon(
+                 icon,
+                 size: 40,
+                 color: color,
+                              ),
+               const SizedBox(height: 8),
+               Text(
                 title,
                 style: const TextStyle(
                   fontSize: 16,

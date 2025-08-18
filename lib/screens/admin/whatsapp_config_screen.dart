@@ -258,7 +258,7 @@ class _WhatsAppConfigScreenState extends State<WhatsAppConfigScreen> {
         ],
       ),
       body: GradientBackground(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,7 +267,7 @@ class _WhatsAppConfigScreenState extends State<WhatsAppConfigScreen> {
               Card(
                 elevation: 4,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(12.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -313,13 +313,13 @@ class _WhatsAppConfigScreenState extends State<WhatsAppConfigScreen> {
                 ),
               ),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               
               // Configuración del número
               Card(
                 elevation: 4,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(12.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -389,13 +389,13 @@ class _WhatsAppConfigScreenState extends State<WhatsAppConfigScreen> {
                 ),
               ),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               
               // Prueba de WhatsApp
               Card(
                 elevation: 4,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(12.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -473,6 +473,8 @@ class _WhatsAppConfigScreenState extends State<WhatsAppConfigScreen> {
                   ],
                 ),
               ),
+              
+              const SizedBox(height: 40), // Espacio adicional al final
             ],
           ),
         ),

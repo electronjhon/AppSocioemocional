@@ -139,7 +139,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -149,7 +149,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                       Card(
                         elevation: 4,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(8.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -180,7 +180,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                       Card(
                         elevation: 4,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(8.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -203,6 +203,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                                         labelText: 'Nombre *',
                                         border: OutlineInputBorder(),
                                         prefixIcon: Icon(Icons.person),
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.trim().isEmpty) {
@@ -212,7 +213,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                                       },
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 4),
                                   Expanded(
                                     child: TextFormField(
                                       controller: _lastNameController,
@@ -220,6 +221,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                                         labelText: 'Apellido *',
                                         border: OutlineInputBorder(),
                                         prefixIcon: Icon(Icons.person_outline),
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                                       ),
                                       validator: (value) {
                                         if (value == null || value.trim().isEmpty) {
@@ -241,6 +243,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                                   labelText: 'Email *',
                                   border: OutlineInputBorder(),
                                   prefixIcon: Icon(Icons.email),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                                 ),
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
@@ -263,6 +266,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                                   labelText: 'Número de Documento *',
                                   border: OutlineInputBorder(),
                                   prefixIcon: Icon(Icons.badge),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                                 ),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
@@ -274,53 +278,50 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                               
                               const SizedBox(height: 16),
                               
-                              // Curso y Rol
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: TextFormField(
-                                      controller: _courseController,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Curso *',
-                                        border: OutlineInputBorder(),
-                                        prefixIcon: Icon(Icons.school),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.trim().isEmpty) {
-                                          return 'El curso es requerido';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: DropdownButtonFormField<String>(
-                                      value: _selectedRole,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Rol *',
-                                        border: OutlineInputBorder(),
-                                        prefixIcon: Icon(Icons.person),
-                                      ),
-                                      items: const [
-                                        DropdownMenuItem(value: 'estudiante', child: Text('Estudiante')),
-                                        DropdownMenuItem(value: 'docente', child: Text('Docente')),
-                                        DropdownMenuItem(value: 'administrador', child: Text('Administrador')),
-                                      ],
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _selectedRole = value!;
-                                        });
-                                      },
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'El rol es requerido';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
+                              // Curso
+                              TextFormField(
+                                controller: _courseController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Curso *',
+                                  border: OutlineInputBorder(),
+                                  prefixIcon: Icon(Icons.school),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'El curso es requerido';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              
+                              const SizedBox(height: 16),
+                              
+                              // Rol
+                              DropdownButtonFormField<String>(
+                                value: _selectedRole,
+                                decoration: const InputDecoration(
+                                  labelText: 'Rol *',
+                                  border: OutlineInputBorder(),
+                                  prefixIcon: Icon(Icons.person),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'estudiante', child: Text('Estudiante')),
+                                  DropdownMenuItem(value: 'docente', child: Text('Docente')),
+                                  DropdownMenuItem(value: 'administrador', child: Text('Administrador')),
                                 ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedRole = value!;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'El rol es requerido';
+                                  }
+                                  return null;
+                                },
                               ),
                               
                               const SizedBox(height: 20),
@@ -341,6 +342,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                                   labelText: 'Contraseña *',
                                   border: const OutlineInputBorder(),
                                   prefixIcon: const Icon(Icons.lock),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _showPassword ? Icons.visibility : Icons.visibility_off,
@@ -373,6 +375,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                                   labelText: 'Confirmar Contraseña *',
                                   border: const OutlineInputBorder(),
                                   prefixIcon: const Icon(Icons.lock_outline),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _showConfirmPassword ? Icons.visibility : Icons.visibility_off,
@@ -490,6 +493,8 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                                   ),
                                 ),
                               ),
+                              
+                              const SizedBox(height: 20),
                             ],
                           ),
                         ),
